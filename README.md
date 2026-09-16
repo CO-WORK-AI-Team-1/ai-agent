@@ -11,11 +11,11 @@ Multi-Agent 구조를 적용하여 최종 AI Agent 서비스를 구현하고 배
 
 | Role | Member |
 |------|--------|
-| Product Owner | YB |
-| AI Engineer | JY |
-| AI Engineer | EY |
-| AI Solution Architect | SH |
-| Cloud Engineer | HC |
+| Product Owner | 윤여빈 |
+| AI Engineer | 정은영 |
+| AI Engineer | 임진영 |
+| AI Solution Architect | 이수현 |
+| Cloud Engineer | 은휘찬 |
 
 ---
 
