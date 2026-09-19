@@ -13,7 +13,13 @@ Multi-Agent 구조를 적용하여 최종 AI Agent 서비스를 구현하고 배
 |------|--------|
 | Product Owner | YB |
 | AI Engineer | JY |
-| AI Engineer | EY |
+| AI Engineer | 정은영 |
+- OpenAI / Gemini / Claude LLM 후보 조사
+- 동일 테스트 케이스 기반 LLM 비교
+- OpenAI / Gemini / Claude API 연동 코드 구현
+- Hallucination / Context / Structured Output 테스트
+- API 응답 시간 및 안정성 비교
+- 프로토타입 기본 LLM 선정
 | AI Solution Architect | SH |
 | Cloud Engineer | HC |
 
