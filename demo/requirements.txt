@@ -7,3 +7,6 @@ numpy>=2,<3
 pymupdf>=1.26,<2
 python-dotenv>=1,<2
 streamlit>=1.50,<2
+
+rank-bm25>=0.2.2,<1
+pytest>=8,<9
