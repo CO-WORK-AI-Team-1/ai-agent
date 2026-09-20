@@ -1,0 +1,12 @@
+# README의 pip 기반 설치 절차를 위한 파일입니다.
+# 재현 가능한 설치에는 uv.lock + `uv sync` 사용을 권장합니다.
+faiss-cpu>=1.12,<2
+langchain>=1,<2
+langchain-openai>=1,<2
+numpy>=2,<3
+pymupdf>=1.26,<2
+python-dotenv>=1,<2
+streamlit>=1.50,<2
+
+rank-bm25>=0.2.2,<1
+pytest>=8,<9
