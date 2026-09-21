@@ -12,10 +12,19 @@ Multi-Agent 구조를 적용하여 최종 AI Agent 서비스를 구현하고 배
 | Role | Member |
 |------|--------|
 | Product Owner | 윤여빈 |
-| AI Engineer | 정은영 |
 | AI Engineer | 임진영 |
-| AI Solution Architect | 이수현 |
+| AI Engineer | 정은영 |
+| AI Solution Architecture | 이수현 |
 | Cloud Engineer | 은휘찬 |
+
+- OpenAI / Gemini / Claude LLM 후보 조사
+- 동일 테스트 케이스 기반 LLM 비교
+- OpenAI / Gemini / Claude API 연동 코드 구현
+- Hallucination / Context / Structured Output 테스트
+- API 응답 시간 및 안정성 비교
+- 프로토타입 기본 LLM 선정
+| AI Solution Architect | SH |
+| Cloud Engineer | HC |
 
 ---
 
@@ -24,6 +33,8 @@ Multi-Agent 구조를 적용하여 최종 AI Agent 서비스를 구현하고 배
 - RFP 기반 요구사항 분석
 - AI Agent 기능 및 Persona 설계
 - RAG 기반 문서 검색 및 질의응답
+- 내부 자료 근거를 표시하는 AI 문서 초안 작성
+- 회의 녹음 전사, 요약, 결정 사항 및 실행 항목 정리
 - Multi-Agent Architecture 설계 및 구현
 - Agent 간 협업 Workflow 구현
 - 서비스 배포 및 운영 환경 구축
@@ -96,7 +107,7 @@ source .venv/bin/activate
 ### 4. Install Dependencies
 
 ```bash
-pip install -r requirements.txt
+pip install -r demo/requirements.txt
 ```
 
 ### 5. Configure Environment Variables
@@ -112,8 +123,27 @@ OPENAI_API_KEY=your_api_key
 ### 6. Run Application
 
 ```bash
-streamlit run app.py
+python -m streamlit run demo/app.py
 ```
+
+브라우저가 열리면 PDF 또는 TXT 문서를 업로드한 뒤 `AI 문서 작성` 탭에서 문서 유형,
+작성 목적, 예상 독자, 추가 요청 사항을 입력하고 `문서 초안 만들기`를 누르세요.
+초안의 `[S번호]`와 화면 하단의 검색 근거를 함께 확인한 뒤, 필요하면 Markdown 파일로 저장합니다.
+
+`회의 업무` 탭에서는 처리 권한 확인 후 25MB 이하의 MP3, MP4, MPEG, MPGA, M4A, WAV,
+WEBM 녹음 파일과 회의 제목을 입력하세요. 전사 원문과 회의록을 각각 다운로드할 수 있으며,
+담당자·기한·결정 사항은 원문에서 명확히 확인되는지 검토해야 합니다.
+
+### 7. Test
+
+자동 테스트는 OpenAI API를 호출하지 않습니다.
+
+```bash
+python -m pytest demo/tests -q -p no:cacheprovider
+```
+
+수동 테스트에서는 사실, 수치, 일정이 업로드 문서에 실제로 있는지와 초안의 `[S번호]`가
+표시된 검색 근거의 파일·페이지와 일치하는지 확인하세요.
 
 ---
 
