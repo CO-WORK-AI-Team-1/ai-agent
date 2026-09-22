@@ -1,3 +1,5 @@
+### [서비스로 가기](https://ux4bxbc2qx3rlg2vg4jujm.streamlit.app/) - https://ux4bxbc2qx3rlg2vg4jujm.streamlit.app/
+
 # AI Agent Project
 
 World Vesion RFP 기반 요구사항을 바탕으로 AI Agent를 설계하고 구현하는 팀 프로젝트입니다.
@@ -23,8 +25,6 @@ Multi-Agent 구조를 적용하여 최종 AI Agent 서비스를 구현하고 배
 - Hallucination / Context / Structured Output 테스트
 - API 응답 시간 및 안정성 비교
 - 프로토타입 기본 LLM 선정
-| AI Solution Architect | SH |
-| Cloud Engineer | HC |
 
 ---
 
