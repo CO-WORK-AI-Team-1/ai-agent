@@ -1,6 +1,6 @@
 from typing import Any
 
-from src.config import Settings, get_settings
+from src.config import AI_SERVICE_CONFIGURATION_ERROR, Settings, get_settings
 from src.prompts.document_writer import render_document_writer_prompt
 from src.prompts.meeting_minutes import render_meeting_minutes_prompt
 from src.prompts.week2_rag import render_week2_prompt
@@ -22,7 +22,7 @@ def run_document_workflow(
 
     settings = settings or get_settings()
     if not settings.api_key_configured and client is None:
-        raise RuntimeError("AI 서비스 연결 정보가 설정되지 않았습니다.")
+        raise RuntimeError(AI_SERVICE_CONFIGURATION_ERROR)
 
     search_results = search_document(
         document_index=document_index,
@@ -88,7 +88,7 @@ def run_document_writer_workflow(
 
     settings = settings or get_settings()
     if not settings.api_key_configured and client is None:
-        raise RuntimeError("AI 서비스 연결 정보가 설정되지 않았습니다.")
+        raise RuntimeError(AI_SERVICE_CONFIGURATION_ERROR)
 
     retrieval_query = "\n".join(
         value.strip()
@@ -169,7 +169,7 @@ def run_meeting_workflow(
 
     settings = settings or get_settings()
     if not settings.api_key_configured and client is None:
-        raise RuntimeError("AI 서비스 연결 정보가 설정되지 않았습니다.")
+        raise RuntimeError(AI_SERVICE_CONFIGURATION_ERROR)
 
     transcription = transcribe_meeting_audio(
         filename=filename,
@@ -180,6 +180,7 @@ def run_meeting_workflow(
     common = {
         "transcript": transcription.text,
         "transcription_latency_ms": transcription.latency_ms,
+        "transcription_chunk_count": transcription.chunk_count,
     }
     if not transcription.success:
         return {

@@ -222,23 +222,39 @@ with meeting_tab:
         key="meeting_audio",
         help=(
             "지원 형식: MP3, MP4, MPEG, MPGA, M4A, WAV, WEBM · "
-            f"최대 {MAX_AUDIO_UPLOAD_BYTES // (1024 * 1024)}MB"
+            f"업로드 최대 {MAX_AUDIO_UPLOAD_BYTES // (1024 * 1024)}MB · "
+            "25MB 초과 파일은 자동 분할 전사"
         ),
     )
+    meeting_file_too_large = (
+        meeting_file is not None
+        and meeting_file.size > MAX_AUDIO_UPLOAD_BYTES
+    )
+    st.caption(
+        "지원 형식: MP3, MP4, MPEG, MPGA, M4A, WAV, WEBM · "
+        f"업로드 최대 {MAX_AUDIO_UPLOAD_BYTES // (1024 * 1024)}MB · "
+        "25MB 초과 파일은 자동 분할 전사"
+    )
+    if meeting_file_too_large:
+        st.error(
+            "업로드한 음성 파일은 100MB를 초과합니다. "
+            "100MB 이하 파일로 나눈 뒤 다시 업로드해 주세요."
+        )
     meeting_title = st.text_input(
         "회의 제목",
         placeholder="예: AI 서비스 플랫폼 MVP 주간 회의",
-        disabled=meeting_file is None,
+        disabled=meeting_file is None or meeting_file_too_large,
     )
     meeting_focus = st.text_area(
         "정리 중점 (선택)",
         placeholder="예: MVP 기능별 담당자와 다음 주까지의 실행 항목을 중심으로 정리해 주세요.",
         height=90,
-        disabled=meeting_file is None,
+        disabled=meeting_file is None or meeting_file_too_large,
     )
     can_process_meeting = (
         consent
         and meeting_file is not None
+        and not meeting_file_too_large
         and bool(meeting_title.strip())
     )
     if not consent:
@@ -249,7 +265,7 @@ with meeting_tab:
         type="primary",
         disabled=not can_process_meeting,
     ):
-        with st.spinner("음성을 전사하고 회의록을 작성하고 있습니다..."):
+        with st.spinner("음성을 전사하고 회의록을 작성하고 있습니다. 대용량 파일은 자동 분할 처리됩니다..."):
             try:
                 result = run_meeting_workflow(
                     filename=meeting_file.name,
@@ -265,6 +281,11 @@ with meeting_tab:
             else:
                 if result["success"]:
                     st.success("회의록이 생성되었습니다.")
+                    if result["transcription_chunk_count"] > 1:
+                        st.caption(
+                            f"대용량 녹음 파일을 {result['transcription_chunk_count']}개 구간으로 "
+                            "나누어 전사했습니다."
+                        )
                     st.markdown("#### 회의록")
                     st.markdown(result["minutes"])
                     st.download_button(

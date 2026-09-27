@@ -6,7 +6,7 @@ from typing import Any
 
 from openai import OpenAI
 
-from src.config import Settings, get_settings
+from src.config import AI_SERVICE_CONFIGURATION_ERROR, Settings, get_settings
 
 logger = logging.getLogger(__name__)
 
@@ -53,7 +53,7 @@ def invoke_response(
     if not prompt.strip():
         raise ValueError("prompt must not be empty")
     if client is None and not settings.api_key_configured:
-        raise RuntimeError("OPENAI_API_KEY가 설정되지 않았습니다.")
+        raise RuntimeError(AI_SERVICE_CONFIGURATION_ERROR)
 
     api = client or OpenAI(api_key=settings.openai_api_key, timeout=60.0, max_retries=2)
     started = perf_counter()

@@ -5,6 +5,11 @@ from functools import lru_cache
 from dotenv import load_dotenv
 
 
+# 화면과 백엔드가 동일하게 노출하는 안전한 설정 오류 메시지입니다.
+# API 키 이름이나 내부 설정값을 사용자에게 보여 주지 않습니다.
+AI_SERVICE_CONFIGURATION_ERROR = "AI 서비스 연결 정보가 설정되지 않았습니다."
+
+
 @dataclass(frozen=True)
 class Settings:
     app_env: str
