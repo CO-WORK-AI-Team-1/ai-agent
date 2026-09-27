@@ -180,6 +180,7 @@ def run_meeting_workflow(
     common = {
         "transcript": transcription.text,
         "transcription_latency_ms": transcription.latency_ms,
+        "transcription_chunk_count": transcription.chunk_count,
     }
     if not transcription.success:
         return {
