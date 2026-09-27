@@ -7,12 +7,13 @@ import numpy as np
 from openai import OpenAI
 from rank_bm25 import BM25Okapi
 
-from src.config import Settings, get_settings
+from src.config import AI_CONNECTION_ERROR_MESSAGE, Settings, get_settings
 
 
 CHUNK_SIZE = 1_000
 CHUNK_OVERLAP = 150
 DEFAULT_K = 5
+MIN_RELEVANCE_SCORE = 0.55
 MAX_DOCUMENT_CHARS = 200_000
 
 # Hybrid Retrieval 가중치
@@ -33,6 +34,7 @@ class SearchResult:
     source_id: str
     chunk: DocumentChunk
     score: float
+    cosine_similarity: float
 
 
 @dataclass
@@ -209,9 +211,7 @@ def _embedding_client(
         return client
 
     if not settings.api_key_configured:
-        raise RuntimeError(
-            "OPENAI_API_KEY가 설정되지 않았습니다."
-        )
+        raise RuntimeError(AI_CONNECTION_ERROR_MESSAGE)
 
     return OpenAI(
         api_key=settings.openai_api_key,
@@ -263,6 +263,8 @@ def build_document_index(
     *,
     filename: str,
     pages: tuple[str, ...],
+    chunk_size: int = CHUNK_SIZE,
+    overlap: int = CHUNK_OVERLAP,
     settings: Settings | None = None,
     client: Any | None = None,
 ) -> DocumentIndex:
@@ -280,6 +282,8 @@ def build_document_index(
     chunks = chunk_document(
         filename=filename,
         pages=pages,
+        chunk_size=chunk_size,
+        overlap=overlap,
     )
 
     # -------------------------
@@ -347,7 +351,10 @@ def _normalize_scores(
     maximum = float(scores.max())
 
     if maximum == minimum:
-        return np.ones_like(
+        # 모든 문서의 점수가 같으면 서로를 구분할 검색 신호가 없습니다.
+        # 특히 모든 BM25 점수가 0인 경우를 높은 관련성으로 오인하지
+        # 않도록 0점으로 처리합니다.
+        return np.zeros_like(
             scores,
             dtype="float32",
         )
@@ -364,6 +371,10 @@ def search_document(
     document_index: DocumentIndex,
     question: str,
     k: int = DEFAULT_K,
+    min_score: float = MIN_RELEVANCE_SCORE,
+    min_vector_score: float | None = None,
+    vector_weight: float = VECTOR_WEIGHT,
+    bm25_weight: float = BM25_WEIGHT,
     settings: Settings | None = None,
     client: Any | None = None,
 ) -> list[SearchResult]:
@@ -387,6 +398,24 @@ def search_document(
         raise ValueError(
             "질문을 입력해 주세요."
         )
+
+    if not 0.0 <= min_score <= 1.0:
+        raise ValueError(
+            "min_score must be between 0 and 1"
+        )
+
+    if min_vector_score is not None and not -1.0 <= min_vector_score <= 1.0:
+        raise ValueError(
+            "min_vector_score must be between -1 and 1"
+        )
+
+    if vector_weight < 0.0 or bm25_weight < 0.0:
+        raise ValueError("search weights must not be negative")
+    weight_total = vector_weight + bm25_weight
+    if weight_total <= 0.0:
+        raise ValueError("at least one search weight must be positive")
+    vector_weight /= weight_total
+    bm25_weight /= weight_total
 
     settings = settings or get_settings()
 
@@ -416,7 +445,7 @@ def search_document(
         )
     )
 
-    faiss_scores = np.zeros(
+    raw_vector_scores = np.zeros(
         chunk_count,
         dtype="float32",
     )
@@ -427,13 +456,22 @@ def search_document(
         strict=True,
     ):
         if index_position >= 0:
-            faiss_scores[
+            raw_vector_scores[
                 int(index_position)
             ] = float(score)
 
-    faiss_scores = _normalize_scores(
-        faiss_scores
-    )
+    if chunk_count == 1:
+        # 비교 대상이 하나뿐이면 min-max 정규화로 관련성을 판단할 수
+        # 없으므로 cosine similarity 자체를 0~1 범위에서 사용합니다.
+        faiss_scores = np.clip(
+            raw_vector_scores,
+            0.0,
+            1.0,
+        )
+    else:
+        faiss_scores = _normalize_scores(
+            raw_vector_scores
+        )
 
     # ==================================
     # 2. BM25 Keyword Search
@@ -459,10 +497,10 @@ def search_document(
     # ==================================
 
     hybrid_scores = (
-        VECTOR_WEIGHT
+        vector_weight
         * faiss_scores
         +
-        BM25_WEIGHT
+        bm25_weight
         * bm25_scores
     )
 
@@ -471,15 +509,27 @@ def search_document(
         hybrid_scores
     )[::-1]
 
+    eligible_indices = [
+        int(index_position)
+        for index_position in ranked_indices
+        if (
+            hybrid_scores[index_position] >= min_score
+            and (
+                min_vector_score is None
+                or raw_vector_scores[index_position] >= min_vector_score
+            )
+        )
+    ]
+
     result_count = min(
         max(k, 1),
-        chunk_count,
+        len(eligible_indices),
     )
 
     results: list[SearchResult] = []
 
     for rank, index_position in enumerate(
-        ranked_indices[:result_count],
+        eligible_indices[:result_count],
         start=1,
     ):
 
@@ -494,6 +544,11 @@ def search_document(
                 ),
                 score=float(
                     hybrid_scores[
+                        index_position
+                    ]
+                ),
+                cosine_similarity=float(
+                    raw_vector_scores[
                         index_position
                     ]
                 ),

@@ -6,7 +6,7 @@ from typing import Any
 
 from openai import OpenAI
 
-from src.config import Settings, get_settings
+from src.config import AI_CONNECTION_ERROR_MESSAGE, Settings, get_settings
 
 logger = logging.getLogger(__name__)
 
@@ -46,6 +46,7 @@ def invoke_response(
     *,
     prompt: str,
     model: str,
+    max_output_tokens: int = 4000,
     settings: Settings | None = None,
     client: Any | None = None,
 ) -> LLMResult:
@@ -53,7 +54,7 @@ def invoke_response(
     if not prompt.strip():
         raise ValueError("prompt must not be empty")
     if client is None and not settings.api_key_configured:
-        raise RuntimeError("OPENAI_API_KEY가 설정되지 않았습니다.")
+        raise RuntimeError(AI_CONNECTION_ERROR_MESSAGE)
 
     api = client or OpenAI(api_key=settings.openai_api_key, timeout=60.0, max_retries=2)
     started = perf_counter()
@@ -61,7 +62,7 @@ def invoke_response(
         response = api.responses.create(
             model=model,
             input=prompt,
-            max_output_tokens=4000,
+            max_output_tokens=max_output_tokens,
             store=False,
         )
         latency_ms = round((perf_counter() - started) * 1000)
