@@ -2,6 +2,7 @@ from types import SimpleNamespace
 
 import pytest
 
+from src.config import AI_SERVICE_CONFIGURATION_ERROR
 from src.prompts.document_writer import render_document_writer_prompt
 from src.rag import build_document_index
 from src.workflow import run_document_writer_workflow
@@ -60,6 +61,10 @@ class FakeSettings:
     api_key_configured = True
 
 
+class MissingApiKeySettings:
+    api_key_configured = False
+
+
 def build_test_index(client):
     return build_document_index(
         filename="budget.pdf",
@@ -116,4 +121,15 @@ def test_writer_workflow_requires_purpose():
             audience="사업 담당자",
             settings=FakeSettings(),
             client=FakeClient(),
+        )
+
+
+def test_writer_workflow_uses_standard_message_when_api_key_is_missing():
+    with pytest.raises(RuntimeError, match=AI_SERVICE_CONFIGURATION_ERROR):
+        run_document_writer_workflow(
+            document_index=SimpleNamespace(),
+            purpose="교육 지원 사업 추진 현황 보고서 작성",
+            document_type="업무 보고서",
+            audience="사업 담당자",
+            settings=MissingApiKeySettings(),
         )

@@ -225,20 +225,34 @@ with meeting_tab:
             f"최대 {MAX_AUDIO_UPLOAD_BYTES // (1024 * 1024)}MB"
         ),
     )
+    meeting_file_too_large = (
+        meeting_file is not None
+        and meeting_file.size > MAX_AUDIO_UPLOAD_BYTES
+    )
+    st.caption(
+        "지원 형식: MP3, MP4, MPEG, MPGA, M4A, WAV, WEBM · "
+        f"최대 {MAX_AUDIO_UPLOAD_BYTES // (1024 * 1024)}MB"
+    )
+    if meeting_file_too_large:
+        st.error(
+            "업로드한 음성 파일은 25MB를 초과합니다. "
+            "25MB 이하로 분할하거나 압축한 뒤 다시 업로드해 주세요."
+        )
     meeting_title = st.text_input(
         "회의 제목",
         placeholder="예: AI 서비스 플랫폼 MVP 주간 회의",
-        disabled=meeting_file is None,
+        disabled=meeting_file is None or meeting_file_too_large,
     )
     meeting_focus = st.text_area(
         "정리 중점 (선택)",
         placeholder="예: MVP 기능별 담당자와 다음 주까지의 실행 항목을 중심으로 정리해 주세요.",
         height=90,
-        disabled=meeting_file is None,
+        disabled=meeting_file is None or meeting_file_too_large,
     )
     can_process_meeting = (
         consent
         and meeting_file is not None
+        and not meeting_file_too_large
         and bool(meeting_title.strip())
     )
     if not consent:

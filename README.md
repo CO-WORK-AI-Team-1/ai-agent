@@ -145,6 +145,10 @@ python -m pytest demo/tests -q -p no:cacheprovider
 수동 테스트에서는 사실, 수치, 일정이 업로드 문서에 실제로 있는지와 초안의 `[S번호]`가
 표시된 검색 근거의 파일·페이지와 일치하는지 확인하세요.
 
+배포 전 최종 점검 항목과 실제 구현/확장 설계의 구분은
+[`docs/final_qa_checklist.md`](docs/final_qa_checklist.md)를 확인하세요. 회의 녹음 파일은
+`.streamlit/config.toml`과 화면 검증으로 최대 25MB까지 제한됩니다.
+
 ---
 
 ## 🌿 Branch Convention

@@ -7,7 +7,7 @@ from typing import Any
 
 from openai import OpenAI
 
-from src.config import Settings, get_settings
+from src.config import AI_SERVICE_CONFIGURATION_ERROR, Settings, get_settings
 
 logger = logging.getLogger(__name__)
 
@@ -54,7 +54,7 @@ def transcribe_meeting_audio(
 
     settings = settings or get_settings()
     if not settings.api_key_configured and client is None:
-        raise RuntimeError("AI 서비스 연결 정보가 설정되지 않았습니다.")
+        raise RuntimeError(AI_SERVICE_CONFIGURATION_ERROR)
 
     api = client or OpenAI(
         api_key=settings.openai_api_key,

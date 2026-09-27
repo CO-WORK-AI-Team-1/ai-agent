@@ -2,7 +2,9 @@ from types import SimpleNamespace
 
 import pytest
 
+from src.config import AI_SERVICE_CONFIGURATION_ERROR
 from src.prompts.meeting_minutes import render_meeting_minutes_prompt
+from src.services import transcription as transcription_service
 from src.services.transcription import transcribe_meeting_audio
 from src.workflow import run_meeting_workflow
 
@@ -65,6 +67,10 @@ class FakeSettings:
     api_key_configured = True
 
 
+class MissingApiKeySettings:
+    api_key_configured = False
+
+
 def test_transcribe_meeting_audio_uses_uploaded_bytes():
     client = FakeClient()
     result = transcribe_meeting_audio(
@@ -79,6 +85,27 @@ def test_transcribe_meeting_audio_uses_uploaded_bytes():
     assert client.audio.transcriptions.model == "fake-transcribe-model"
     assert client.audio.transcriptions.filename == "weekly-meeting.m4a"
     assert client.audio.transcriptions.data == b"audio-bytes"
+
+
+def test_transcription_rejects_file_larger_than_the_limit(monkeypatch):
+    monkeypatch.setattr(transcription_service, "MAX_AUDIO_UPLOAD_BYTES", 3)
+
+    with pytest.raises(ValueError, match="25MB를 초과"):
+        transcription_service.transcribe_meeting_audio(
+            filename="weekly-meeting.m4a",
+            data=b"1234",
+            settings=FakeSettings(),
+        )
+
+
+def test_meeting_workflow_uses_standard_message_when_api_key_is_missing():
+    with pytest.raises(RuntimeError, match=AI_SERVICE_CONFIGURATION_ERROR):
+        run_meeting_workflow(
+            filename="weekly-meeting.m4a",
+            audio_data=b"audio-bytes",
+            meeting_title="AI 서비스 플랫폼 MVP 주간 회의",
+            settings=MissingApiKeySettings(),
+        )
 
 
 def test_meeting_workflow_returns_minutes_and_transcript():
