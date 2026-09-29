@@ -65,7 +65,8 @@ Multi-Agent 구조를 적용하여 최종 AI Agent 서비스를 구현하고 배
 
 ## 🏗 System Architecture
 
-> Multi-Agent Architecture 설계 후 업데이트 예정
+<img width="1658" height="984" alt="image" src="https://github.com/user-attachments/assets/2a7d1925-d92e-4be7-974f-62226d39fd55" />
+
 
 ---
 
