@@ -17,14 +17,12 @@ Multi-Agent 구조를 적용하여 최종 AI Agent 서비스를 구현하고 배
 | AI Solution Architecture | 이수현 |
 | Cloud Engineer | 은휘찬 |
 
-- OpenAI / Gemini / Claude LLM 후보 조사
+- OpenAI (주력) / Gemini / Claude LLM 후보 조사
 - 동일 테스트 케이스 기반 LLM 비교
 - OpenAI / Gemini / Claude API 연동 코드 구현
 - Hallucination / Context / Structured Output 테스트
 - API 응답 시간 및 안정성 비교
 - 프로토타입 기본 LLM 선정
-| AI Solution Architect | SH |
-| Cloud Engineer | HC |
 
 ---
 
@@ -65,7 +63,8 @@ Multi-Agent 구조를 적용하여 최종 AI Agent 서비스를 구현하고 배
 
 ## 🏗 System Architecture
 
-> Multi-Agent Architecture 설계 후 업데이트 예정
+<img width="1658" height="984" alt="image" src="https://github.com/user-attachments/assets/8a5229dd-2ed1-42e2-ab7c-515fb2042880" />
+
 
 ---
 
