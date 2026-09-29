@@ -2,7 +2,9 @@ from types import SimpleNamespace
 
 import pytest
 
+from src.config import AI_SERVICE_CONFIGURATION_ERROR
 from src.prompts.meeting_minutes import render_meeting_minutes_prompt
+from src.services import transcription as transcription_service
 from src.services.transcription import transcribe_meeting_audio
 from src.workflow import run_meeting_workflow
 
@@ -12,11 +14,13 @@ class FakeTranscriptions:
         self.model = ""
         self.filename = ""
         self.data = b""
+        self.calls = []
 
     def create(self, *, model, file):
         self.model = model
         self.filename = file.name
         self.data = file.read()
+        self.calls.append((self.filename, self.data))
         return SimpleNamespace(
             text=(
                 "민지는 예산안을 금요일까지 검토하기로 했습니다. "
@@ -65,6 +69,10 @@ class FakeSettings:
     api_key_configured = True
 
 
+class MissingApiKeySettings:
+    api_key_configured = False
+
+
 def test_transcribe_meeting_audio_uses_uploaded_bytes():
     client = FakeClient()
     result = transcribe_meeting_audio(
@@ -79,6 +87,53 @@ def test_transcribe_meeting_audio_uses_uploaded_bytes():
     assert client.audio.transcriptions.model == "fake-transcribe-model"
     assert client.audio.transcriptions.filename == "weekly-meeting.m4a"
     assert client.audio.transcriptions.data == b"audio-bytes"
+
+
+def test_transcription_rejects_file_larger_than_the_upload_limit(monkeypatch):
+    monkeypatch.setattr(transcription_service, "MAX_AUDIO_UPLOAD_BYTES", 3)
+
+    with pytest.raises(ValueError, match="100MB를 초과"):
+        transcription_service.transcribe_meeting_audio(
+            filename="weekly-meeting.m4a",
+            data=b"1234",
+            settings=FakeSettings(),
+        )
+
+
+def test_transcription_merges_api_safe_chunks_for_a_large_upload(monkeypatch):
+    monkeypatch.setattr(transcription_service, "MAX_TRANSCRIPTION_REQUEST_BYTES", 3)
+    monkeypatch.setattr(
+        transcription_service,
+        "_split_large_audio_for_transcription",
+        lambda **_: [
+            ("weekly-meeting_part_001.mp3", b"one"),
+            ("weekly-meeting_part_002.mp3", b"two"),
+        ],
+    )
+    client = FakeClient()
+
+    result = transcription_service.transcribe_meeting_audio(
+        filename="weekly-meeting.wav",
+        data=b"source-audio",
+        settings=FakeSettings(),
+        client=client,
+    )
+
+    assert result.success is True
+    assert result.chunk_count == 2
+    assert len(client.audio.transcriptions.calls) == 2
+    assert client.audio.transcriptions.calls[0][0] == "weekly-meeting_part_001.mp3"
+    assert client.audio.transcriptions.calls[1][0] == "weekly-meeting_part_002.mp3"
+
+
+def test_meeting_workflow_uses_standard_message_when_api_key_is_missing():
+    with pytest.raises(RuntimeError, match=AI_SERVICE_CONFIGURATION_ERROR):
+        run_meeting_workflow(
+            filename="weekly-meeting.m4a",
+            audio_data=b"audio-bytes",
+            meeting_title="AI 서비스 플랫폼 MVP 주간 회의",
+            settings=MissingApiKeySettings(),
+        )
 
 
 def test_meeting_workflow_returns_minutes_and_transcript():

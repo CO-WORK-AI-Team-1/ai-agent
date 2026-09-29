@@ -12,10 +12,7 @@ def get_openai_client():
     api_key = os.getenv("OPENAI_API_KEY")
 
     if not api_key:
-        raise ValueError(
-            "OPENAI_API_KEY가 설정되지 않았습니다. "
-            ".env 파일을 확인해주세요."
-        )
+        raise RuntimeError("AI 서비스 연결 정보가 설정되지 않았습니다.")
 
     return OpenAI(api_key=api_key)
 

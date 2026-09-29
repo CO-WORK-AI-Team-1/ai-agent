@@ -1,4 +1,4 @@
-### [서비스로 가기](https://ux4bxbc2qx3rlg2vg4jujm.streamlit.app/) - https://ux4bxbc2qx3rlg2vg4jujm.streamlit.app/
+#### [배포 서비스](https://ux4bxbc2qx3rlg2vg4jujm.streamlit.app/) - https://ux4bxbc2qx3rlg2vg4jujm.streamlit.app/
 
 # AI Agent Project
 
@@ -19,7 +19,7 @@ Multi-Agent 구조를 적용하여 최종 AI Agent 서비스를 구현하고 배
 | AI Solution Architecture | 이수현 |
 | Cloud Engineer | 은휘찬 |
 
-- OpenAI / Gemini / Claude LLM 후보 조사
+- OpenAI (주력) / Gemini / Claude LLM 후보 조사
 - 동일 테스트 케이스 기반 LLM 비교
 - OpenAI / Gemini / Claude API 연동 코드 구현
 - Hallucination / Context / Structured Output 테스트
@@ -65,7 +65,7 @@ Multi-Agent 구조를 적용하여 최종 AI Agent 서비스를 구현하고 배
 
 ## 🏗 System Architecture
 
-<img width="1658" height="984" alt="image" src="https://github.com/user-attachments/assets/2a7d1925-d92e-4be7-974f-62226d39fd55" />
+<img width="1658" height="984" alt="image" src="https://github.com/user-attachments/assets/8a5229dd-2ed1-42e2-ab7c-515fb2042880" />
 
 
 ---
@@ -131,9 +131,10 @@ python -m streamlit run demo/app.py
 작성 목적, 예상 독자, 추가 요청 사항을 입력하고 `문서 초안 만들기`를 누르세요.
 초안의 `[S번호]`와 화면 하단의 검색 근거를 함께 확인한 뒤, 필요하면 Markdown 파일로 저장합니다.
 
-`회의 업무` 탭에서는 처리 권한 확인 후 25MB 이하의 MP3, MP4, MPEG, MPGA, M4A, WAV,
-WEBM 녹음 파일과 회의 제목을 입력하세요. 전사 원문과 회의록을 각각 다운로드할 수 있으며,
-담당자·기한·결정 사항은 원문에서 명확히 확인되는지 검토해야 합니다.
+`회의 업무` 탭에서는 처리 권한 확인 후 최대 100MB의 MP3, MP4, MPEG, MPGA, M4A, WAV,
+WEBM 녹음 파일과 회의 제목을 입력하세요. 25MB를 초과하는 녹음은 임시 MP3 구간으로 자동
+분할 전사한 뒤 하나의 원문으로 합칩니다. 전사 원문과 회의록을 각각 다운로드할 수 있으며,
+담당자·기한·결정 사항은 원문에서 명확히 확인해야 합니다.
 
 ### 7. Test
 
@@ -145,6 +146,10 @@ python -m pytest demo/tests -q -p no:cacheprovider
 
 수동 테스트에서는 사실, 수치, 일정이 업로드 문서에 실제로 있는지와 초안의 `[S번호]`가
 표시된 검색 근거의 파일·페이지와 일치하는지 확인하세요.
+
+배포 전 최종 점검 항목과 실제 구현/확장 설계의 구분은
+[`docs/final_qa_checklist.md`](docs/final_qa_checklist.md)를 확인하세요. 회의 녹음 파일은
+`.streamlit/config.toml`과 화면 검증으로 최대 100MB까지 업로드할 수 있습니다.
 
 ---
 

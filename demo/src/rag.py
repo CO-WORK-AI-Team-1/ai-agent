@@ -7,7 +7,7 @@ import numpy as np
 from openai import OpenAI
 from rank_bm25 import BM25Okapi
 
-from src.config import Settings, get_settings
+from src.config import AI_SERVICE_CONFIGURATION_ERROR, Settings, get_settings
 
 
 CHUNK_SIZE = 1_000
@@ -209,9 +209,7 @@ def _embedding_client(
         return client
 
     if not settings.api_key_configured:
-        raise RuntimeError(
-            "OPENAI_API_KEY가 설정되지 않았습니다."
-        )
+        raise RuntimeError(AI_SERVICE_CONFIGURATION_ERROR)
 
     return OpenAI(
         api_key=settings.openai_api_key,

@@ -1,5 +1,8 @@
 from types import SimpleNamespace
 
+import pytest
+
+from src.config import AI_SERVICE_CONFIGURATION_ERROR
 from src.rag import (
     build_document_index,
     chunk_document,
@@ -40,6 +43,10 @@ class FakeClient:
 class FakeSettings:
     embedding_model = "fake-embedding"
     api_key_configured = True
+
+
+class MissingApiKeySettings:
+    api_key_configured = False
 
 
 def test_chunk_document():
@@ -97,3 +104,12 @@ def test_hybrid_search():
 
     # 검색 점수는 높은 순서여야 함
     assert results[0].score >= results[1].score
+
+
+def test_document_index_uses_standard_message_when_api_key_is_missing():
+    with pytest.raises(RuntimeError, match=AI_SERVICE_CONFIGURATION_ERROR):
+        build_document_index(
+            filename="test.pdf",
+            pages=("테스트 문서입니다.",),
+            settings=MissingApiKeySettings(),
+        )
